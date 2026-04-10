@@ -1,5 +1,6 @@
 import whatsappService from './whatsappService.js';
 import axios from 'axios';
+import { randomUUID } from 'crypto';
 
 // ==============================
 // GLOBALS
@@ -7,6 +8,7 @@ import axios from 'axios';
 const processedMessages = new Set();
 const START_TIME = Math.floor(Date.now() / 1000);
 const userState = {};
+const userSessions = {};
 
 // ==============================
 // HANDLER
@@ -43,6 +45,15 @@ class MessageHandler {
     }
 
     const userId = message.from;
+    // ------------------------------
+    // SESSION MANAGEMENT
+    // ------------------------------
+    if (!userSessions[userId]) {
+      userSessions[userId] = randomUUID();
+      console.log("Nueva sesión creada:", userSessions[userId]);
+    }
+
+    const sessionId = userSessions[userId];
 
     console.log("\n==============================");
     console.log("Mensaje recibido");
@@ -127,13 +138,11 @@ class MessageHandler {
           "🔎 Buscando una recomendación para ti..."
         );
 
-        const response = await axios.post(
-          "http://127.0.0.1:8000/chat",
-          {
-            user_id: userId,
-            message: userMessage
-          }
-        );
+        const response = await axios.post("http://127.0.0.1:8000/chat", {
+          session_id: sessionId,
+          user_id: userId,
+          message: userMessage
+        });
 
         const aiText = response.data.response;
 
@@ -200,7 +209,7 @@ class MessageHandler {
         await axios.post(
           "http://127.0.0.1:8000/feedback",
           {
-            session_id: userId,
+            session_id: sessionId,
             query: state.last_query,
             recommendation: state.last_recommendation,
             feedback: state.feedback
@@ -212,7 +221,7 @@ class MessageHandler {
           "Gracias por tu feedback. ¡Hasta pronto!"
         );
 
-        delete userState[userId];
+        delete userSessions[userId];
         return;
       }
 
@@ -234,7 +243,7 @@ class MessageHandler {
   // ============================
 
   isExit(msg) {
-    return ["salir", "exit", "quit", "adios"].some(x => msg.includes(x));
+    return ["salir", "exit", "adios"].some(x => msg.includes(x));
   }
 
   mapCSAT(msg) {
