@@ -249,7 +249,7 @@ function fastRouter(text = "") {
     return {
       intent: "SEARCH",
       query:
-        "informacion sobre la pelicula One Battle after the other",
+        "pelucula One Battle After Another",
       source: "map_oscar"
     };
   }
@@ -291,7 +291,7 @@ function fastRouter(text = "") {
     return {
       intent: "SEARCH",
       query:
-        `Películas similares a ${text}`,
+        `${text}`,
       source: "map_similarity"
     };
   }
@@ -304,7 +304,7 @@ function fastRouter(text = "") {
     return {
       intent: "SEARCH",
       query:
-        `Películas similares a ${text}`,
+        `${text}`,
       source: "map_title"
     };
   }
@@ -351,7 +351,7 @@ export async function runMiniRouter(
           }
         },
         {
-          timeout: 5000
+          timeout: 500000
         }
       );
 
